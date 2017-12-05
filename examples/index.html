@@ -2,212 +2,32 @@
 <html>
     <head>
         <title>N-Logo Example</title>
-        <script type="text/javascript">
-            var w, h, lw, iw, ih, params1, params2, resizing;
-
-            window.onresize = function () {
-                clearTimeout(resizing);
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                resizing = setTimeout(function () {
-                    NLogo();
-                }, 500);
-            }
-
-            window.onload = function () {
-                window.canvas = document.getElementById("canvas");
-                window.context = canvas.getContext("2d");
-                NLogo();
-            }
-
-            function NLogo() {
-                var logoSize = window.innerWidth
-                if (logoSize > window.innerHeight) logoSize = window.innerHeight
-                canvas.width = logoSize * 0.8;
-                canvas.height = canvas.width;
-                InitParams(canvas.width);
-                context.lineWidth = lw;
-                context.lineJoin = "miter";
-                context.strokeStyle = "#000";
-                context.globalAlpha = 0;
-                canvas.style.margin = ((window.innerHeight - canvas.height) / 2 - 10).toString() + "px auto 0";
-                animateLogo();
-            }
-
-            function drawLogo() {
-                context.beginPath();
-                context.moveTo(three4ths(w), h - three4ths(h / 2));
-                context.lineTo(w - seven8ths(w / 2), three4ths(h / 2));
-                context.lineTo(w - seven8ths(w / 2), lw / 2);
-                context.lineTo(w - lw / 2, lw / 2);
-                context.lineTo(w - lw / 2, h - lw / 2);
-                context.lineTo(seven8ths(w / 2) + lw / 2, h - lw / 2);
-                context.stroke();
-
-                context.beginPath();
-                context.moveTo(w - three4ths(w), three4ths(h / 2));
-                context.lineTo(seven8ths(w / 2), h - three4ths(h / 2));
-                context.lineTo(seven8ths(w / 2), h - lw / 2);
-                context.lineTo(lw / 2, h - lw / 2);
-                context.lineTo(lw / 2, lw / 2);
-                context.lineTo(w - seven8ths(w / 2) - lw / 2, lw / 2);
-                context.stroke();
-
-                hideInnerLineEdges();
-            }
-
-            /*- Clears canvas
-             *- Updates global alpha for the fade effect
-             *- Draw the logo
-             *- Draw updated lines 
-             *- Recursively call until both lines are removed  */
-            function animateLogo() {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                if (context.globalAlpha < 1) context.globalAlpha += 0.01;
-                updateAndDrawLine(params1);
-                updateAndDrawLine(params2);
-                if (!(params1.removed || params2.removed)) getAnimationFramePF(animateLogo);
-            }
-
-            /*- Calculates the x & y coordinates of the current line 
-             *- Draws the updated lines
-             *- Increments or resets indexes */
-            function updateAndDrawLine(p) {
-                var l = p.line,
-                    s = p.segmentIndex,
-                    f = p.f,
-                    x1 = l.vectorArray[s].x,
-                    y1 = l.vectorArray[s].y,
-                    x2 = l.vectorArray[s + 1].x,
-                    y2 = l.vectorArray[s + 1].y;
-            
-                // Interpolation Formula
-                p.line.currX = Math.round(x1 + (x2 - x1) * f);
-                p.line.currY = Math.round(y1 + (y2 - y1) * f);
-
-                drawLine(p.line, p.segmentIndex);
-                hideInnerLineEdges();
-                
-                if (f < 1) p.f += 0.05;
-                else {
-                    p.f = 0;
-                    if (s + 2 <= p.line.segmentCount) p.segmentIndex++;
-                    else p.removed = true; // base case
-                }
-
-                if (!p.removed) {
-                    context.save();
-                    context.globalAlpha = 1;
-                    context.beginPath();
-                    context.arc(p.line.currX, p.line.currY, lw / 2, 0, 2 * Math.PI, false);
-                    context.fill();
-                    context.restore();
-                }
-            }
-
-            /*- Draw Line segments until the segmentIndex  */
-            function drawLine(line, segmentIndex) {
-                context.beginPath();
-                context.moveTo(line.vectorArray[0].x, line.vectorArray[0].y);
-                for (var i = 1; i < segmentIndex + 1; i++) {
-                    context.lineTo(line.vectorArray[i].x, line.vectorArray[i].y);
-                }
-                context.lineTo(line.currX, line.currY);
-                context.stroke();
-            }
-
-            function hideInnerLineEdges() {
-                context.save();
-                context.globalAlpha = 1;
-                context.fillStyle = "#FFF";
-                context.fillRect(w - lw - iw, h - lw - ih, iw, ih);
-                context.fillRect(lw, lw, iw, ih);
-                context.restore();
-            }
-
-            /*- Initializes global parameters */
-            function InitParams(width) {
-                w = width,
-                h = w,
-                lw = Math.round(w * 0.08), //-> Line Width
-                iw = Math.round((w - lw * 2) / 2), //-> Inner Rect Width
-                ih = Math.round(three4ths(iw) + (three4ths(iw) * 0.045)); //-> Inner Rect Height
-
-                var line1 = new Line([
-                    new Vector(three4ths(w), h - three4ths(h / 2)),
-                    new Vector(w - seven8ths(w / 2), three4ths(h / 2)),
-                    new Vector(w - seven8ths(w / 2), lw / 2),
-                    new Vector(w - lw / 2, lw / 2),
-                    new Vector(w - lw / 2, h - lw / 2),
-                    new Vector(seven8ths(w / 2) + lw / 2, h - lw / 2)
-                ]);
-
-                var line2 = new Line([
-                    new Vector(w - three4ths(w), three4ths(h / 2)),
-                    new Vector(seven8ths(w / 2), h - three4ths(h / 2)),
-                    new Vector(seven8ths(w / 2), h - lw / 2),
-                    new Vector(lw / 2, h - lw / 2),
-                    new Vector(lw / 2, lw / 2),
-                    new Vector(w - seven8ths(w / 2) - lw / 2, lw / 2)
-                ]);
-
-                params1 = new ParamArray(line1, 0, 0, false);
-                params2 = new ParamArray(line2, 0, 0, false);
-            }
-
-            function seven8ths(x) { return Math.round(x * 0.875) }
-            function three4ths(x) { return Math.round(x * 0.75) }
-
-            /*|--------------------------|*
-             *|==> Constructor Functions |*
-             *|--------------------------|*/
-            function Line(vectors) {
-                this.vectorArray = vectors
-                this.segmentCount = vectors.length - 1;
-                this.currX = vectors[0].x;
-                this.currY = vectors[0].y;
-            }
-
-            function Vector(x, y) {
-                this.x = x;
-                this.y = y;
-            }
-
-            function ParamArray(l, s, f, r) {
-                this.line = l;          //- int         -> the Line to be animated
-                this.segmentIndex = s;  //- int         -> used to iterate through the segments (Vector pairs) in a Line
-                this.f = f;             //- float       -> factor f for the interpolation formula used to animate the Line
-                this.removed = r;       //- boolean     -> used to determine if the animation is complete
-            }
-
-            /*|------------------------------------------|*
-             *|==> window.requestAnimationFrame polyfill |*
-             *|------------------------------------------|*/
-            window.getAnimationFramePF = (function () {
-                var fallback = function (callback, element) {
-                    var start, finish;
-                    window.setTimeout(function () {
-                        start = (new Date()).getTime();
-                        callback(start);
-                        finish = (new Date()).getTime();
-                        self.timeout = 1000 / 60 - (finish - start);
-                    }, self.timeout);
-                };
-                return window.requestAnimationFrame         ||
-                       window.webkitRequestAnimationFrame   ||
-                       window.mozRequestAnimationFrame      ||
-                       window.oRequestAnimationFrame        ||
-                       window.msRequestAnimationFrame       ||
-                       fallback
-            })();
-        </script>
         <style>
             body { text-align: center; }
             canvas { display: inline-block; }
         </style>
     </head>
     <body>
-        <canvas id="canvas" width="800" height="800">
-            Canvas not supported in this browser
-        </canvas>
+        <canvas id="canvas">Canvas not supported in this browser</canvas>
+        <script type='text/javascript' src='./n-logo.js'></script>
+        <script type='text/javascript'>
+            var resizing = false;
+            var logo = new N.Logo("canvas", 400);
+            var centerLogo = () => logo._canvas.style.margin = ((window.innerHeight - logo._canvas.width) / 2 - 10) + "px auto 0";
+
+            centerLogo();
+            logo.animate();
+
+            window.onresize = function () {
+                clearTimeout(resizing);
+                resizing = setTimeout(function () {
+                    var logoSize = window.innerWidth
+                    if (logoSize > window.innerHeight) logoSize = window.innerHeight
+                    logo.setWidth(logoSize * 0.8);
+                    centerLogo();
+                    logo.animate();
+                }, 500);
+            }
+        </script>
     </body>
 </html>
