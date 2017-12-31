@@ -20,13 +20,13 @@ export default class Logo {
 
     draw() {
         this._initParams();
-        
+        this._resetCanvas();
+
         var w = this._canvas.width;
         var lw = this._lw;
 
         this._context.save();
-        this._updateAllParam();
-        this._context.globalAlpha = 1;
+        this._context.globalAlpha = 1;        
 
         this._context.beginPath();
         this._context.moveTo(Logo._3_4ths(w), w - Logo._3_4ths(w / 2));
