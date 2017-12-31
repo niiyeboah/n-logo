@@ -4,7 +4,7 @@
   "description": "Animation of my logo using the Canvas API",
   "main": "dist/n-logo.js",
   "scripts": {
-    "build": "webpack && copy \"dist\\n-logo.js\" \"examples\""
+    "build": "webpack && cp dist/n-logo.web.js examples && cp dist/n-logo.js ../niiyeboah.com/public/js"
   },
   "keywords": [
     "canvas",

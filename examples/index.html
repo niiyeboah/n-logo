@@ -4,21 +4,21 @@
         <title>N-Logo Example</title>
         <style>
             body { text-align: center; }
-            canvas { display: inline-block; }
+            canvas { display: inline-block; cursor: pointer; }
         </style>
     </head>
     <body>
         <canvas id="canvas">Canvas not supported in this browser</canvas>
-        <script type='text/javascript' src='./n-logo.js'></script>
+        <script type='text/javascript' src='./n-logo.web.js'></script>
         <script type='text/javascript'>
             var resizing = false;
-            var logo = new N.Logo("canvas", 400);
+            var logo = new Logo("canvas", 400);
+            var canvas = document.querySelector('canvas');
             var centerLogo = () => logo._canvas.style.margin = ((window.innerHeight - logo._canvas.width) / 2 - 10) + "px auto 0";
-
             centerLogo();
             logo.animate();
-
-            window.onresize = function () {
+            canvas.onclick = () => logo.download();
+            window.onresize = () => {
                 clearTimeout(resizing);
                 resizing = setTimeout(function () {
                     var logoSize = window.innerWidth

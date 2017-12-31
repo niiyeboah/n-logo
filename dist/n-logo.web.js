@@ -4,9 +4,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define([], factory);
 	else if(typeof exports === 'object')
-		exports["N"] = factory();
+		exports["Logo"] = factory();
 	else
-		root["N"] = factory();
+		root["Logo"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -91,7 +91,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Logo = exports.Logo = function () {
+var Logo = function () {
     function Logo() {
         var element_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         var width = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 420;
@@ -102,27 +102,31 @@ var Logo = exports.Logo = function () {
         var canvas;
         if (element_id) {
             var el = document.getElementById(element_id);
-            if (el.tagName !== "CANVAS") {
-                canvas = document.createElement("canvas");
+            if (el.tagName !== 'CANVAS') {
+                canvas = document.createElement('canvas');
                 el.appendChild(canvas);
             } else canvas = el;
-        } else canvas = document.createElement("canvas");
+        } else canvas = document.createElement('canvas');
         canvas.height = canvas.width = width;
         this._canvas = canvas;
-        this._context = canvas.getContext("2d");
-        this._context.lineJoin = "miter";
-        this._context.strokeStyle = "#000";
+        this._context = canvas.getContext('2d');
+        this._context.lineJoin = 'miter';
+        this._context.strokeStyle = '#000';
         this._context.globalAlpha = 0;
         this._initParams(this._canvas.width);
         if (drawLogo) this.draw();
     }
 
     _createClass(Logo, [{
-        key: "draw",
+        key: 'draw',
         value: function draw() {
-            var w = this._canvas.width,
-                lw = this._lw;
+            this._initParams();
+
+            var w = this._canvas.width;
+            var lw = this._lw;
+
             this._context.save();
+            this._updateAllParam();
             this._context.globalAlpha = 1;
 
             this._context.beginPath();
@@ -146,6 +150,15 @@ var Logo = exports.Logo = function () {
             this._context.restore();
             this._hideInnerLineEdges();
         }
+    }, {
+        key: 'download',
+        value: function download() {
+            var canvasdata = this._canvas.toDataURL('image/png');
+            var a = document.createElement('a');
+            a.download = 'n-logo.png';
+            a.href = canvasdata;
+            a.click();
+        }
 
         /**
          *- Clears canvas
@@ -156,37 +169,41 @@ var Logo = exports.Logo = function () {
          */
 
     }, {
-        key: "animate",
-        value: function animate() {
+        key: '_animateLogo',
+        value: function _animateLogo(callback) {
             var _this = this;
 
             this._resetCanvas();
-            if (this._context.globalAlpha < 1) this._context.globalAlpha += 0.01;
-            console.log(this._context.globalAlpha);
+            if (this._context.globalAlpha < 1) this._context.globalAlpha += 0.02;
             this._updateAllParam();
             if (!this._animationComplete()) requestAnimationFrame(function () {
-                return _this.animate();
-            });else this._context.globalAlpha = 0;
+                return _this._animateLogo(callback);
+            });else if (callback) callback();
         }
     }, {
-        key: "setWidth",
+        key: 'animate',
+        value: function animate(callback) {
+            this._initParams();
+            this._animateLogo(callback);
+        }
+    }, {
+        key: 'setWidth',
         value: function setWidth(w) {
             this._canvas.height = this._canvas.width = w;
-            this._initParams(this._canvas.width);
         }
     }, {
-        key: "_resetCanvas",
+        key: '_resetCanvas',
         value: function _resetCanvas() {
             var w = this._canvas.width;
             this._context.save();
             this._context.clearRect(0, 0, w, w);
             this._context.globalAlpha = 1;
-            this._context.fillStyle = "#FFF";
+            this._context.fillStyle = '#FFF';
             this._context.fillRect(0, 0, w, w);
             this._context.restore();
         }
     }, {
-        key: "_animationComplete",
+        key: '_animationComplete',
         value: function _animationComplete() {
             var complete = false;
             for (var i = 0; i < this._params.length; i++) {
@@ -195,14 +212,14 @@ var Logo = exports.Logo = function () {
             return complete;
         }
     }, {
-        key: "_updateAllParam",
+        key: '_updateAllParam',
         value: function _updateAllParam() {
             for (var i = 0; i < this._params.length; i++) {
                 this._updateAndDrawLine(this._params[i]);
             }
         }
     }, {
-        key: "_updateAndDrawLine",
+        key: '_updateAndDrawLine',
         value: function _updateAndDrawLine(param) {
             // AnimationParam
             if (!param.complete) {
@@ -223,7 +240,7 @@ var Logo = exports.Logo = function () {
                 this._drawLine(param.line, param.segmentIndex);
                 this._hideInnerLineEdges();
 
-                if (f < 1) param.f += 0.05;else {
+                if (f < 1) param.f += 0.1;else {
                     param.f = 0;
                     if (s + 2 <= param.line.segmentCount) param.segmentIndex++;else param.complete = true; // base case
                 }
@@ -237,7 +254,7 @@ var Logo = exports.Logo = function () {
          */
 
     }, {
-        key: "_drawLine",
+        key: '_drawLine',
         value: function _drawLine(line, segmentIndex) {
             this._context.beginPath();
             this._context.moveTo(line.vectorArray[0].x, line.vectorArray[0].y);
@@ -248,7 +265,7 @@ var Logo = exports.Logo = function () {
             this._context.stroke();
         }
     }, {
-        key: "_hideInnerLineEdges",
+        key: '_hideInnerLineEdges',
         value: function _hideInnerLineEdges() {
             var w = this._canvas.width,
                 lw = this._lw,
@@ -256,13 +273,13 @@ var Logo = exports.Logo = function () {
                 ih = this._lh;
             this._context.save();
             this._context.globalAlpha = 1;
-            this._context.fillStyle = "#FFF";
+            this._context.fillStyle = '#FFF';
             this._context.fillRect(w - lw - iw, w - lw - ih, iw, ih);
             this._context.fillRect(lw, lw, iw, ih);
             this._context.restore();
         }
     }, {
-        key: "_outerBorder",
+        key: '_outerBorder',
         value: function _outerBorder() {
             this._context.beginPath();
             this._context.moveTo(0, 0);
@@ -273,13 +290,13 @@ var Logo = exports.Logo = function () {
             this._context.stroke();
         }
     }, {
-        key: "_drawBrushTip",
+        key: '_drawBrushTip',
         value: function _drawBrushTip(x, y) {
             this._context.save();
             this._context.globalAlpha = 1;
             this._context.beginPath();
             this._context.arc(x, y, this._lw / 2, 0, 2 * Math.PI, false);
-            this._context.fillStyle = "#000";
+            this._context.fillStyle = '#000';
             this._context.fill();
             this._context.restore();
         }
@@ -289,15 +306,15 @@ var Logo = exports.Logo = function () {
          */
 
     }, {
-        key: "_initParams",
+        key: '_initParams',
         value: function _initParams() {
-            var w = this._canvas.width,
-                lw = this._lw = Math.round(w * 0.08),
-                //-> Line Width
-            iw = this._iw = Math.round((w - lw * 2) / 2),
-                //-> Inner Rect Width
-            ih = this._lh = Math.round(Logo._3_4ths(iw) + Logo._3_4ths(iw) * 0.045); //-> Inner Rect Height
+            var w = this._canvas.width;
+            var lw = Math.round(w * 0.08); //-> Line Width
 
+            this._lw = lw;
+            this._iw = Math.round((w - lw * 2) / 2); //-> Inner Rect Width
+            this._lh = Math.round(Logo._3_4ths(this._iw) + Logo._3_4ths(this._iw) * 0.045); //-> Inner Rect Height
+            this._context.globalAlpha = 0;
             this._context.lineWidth = lw;
 
             var l1 = new Line([new Vector(Logo._3_4ths(w), w - Logo._3_4ths(w / 2)), new Vector(w - Logo._7_8ths(w / 2), Logo._3_4ths(w / 2)), new Vector(w - Logo._7_8ths(w / 2), lw / 2), new Vector(w - lw / 2, lw / 2), new Vector(w - lw / 2, w - lw / 2), new Vector(Logo._7_8ths(w / 2) + lw / 2, w - lw / 2)]);
@@ -309,12 +326,12 @@ var Logo = exports.Logo = function () {
             this._params.push(new AnimationParam(l2, 0, 0, false));
         }
     }], [{
-        key: "_7_8ths",
+        key: '_7_8ths',
         value: function _7_8ths(x) {
             return Math.round(x * 0.875);
         }
     }, {
-        key: "_3_4ths",
+        key: '_3_4ths',
         value: function _3_4ths(x) {
             return Math.round(x * 0.75);
         }
@@ -322,6 +339,8 @@ var Logo = exports.Logo = function () {
 
     return Logo;
 }();
+
+exports.default = Logo;
 
 var Line = exports.Line = function Line(vectors) {
     _classCallCheck(this, Line);
@@ -347,6 +366,15 @@ var AnimationParam = exports.AnimationParam = function AnimationParam(l, s, f, c
     this.f = f; //- float       -> factor f for the interpolation formula used to animate the Line
     this.complete = c; //- boolean     -> used to determine if the animation is complete
 };
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(0).default;
 
 /***/ })
 /******/ ]);

@@ -1,27 +1,31 @@
-export class Logo {
+export default class Logo {
     constructor(element_id = false, width = 420, drawLogo = false) {
         var canvas;
         if (element_id) {
             var el = document.getElementById(element_id);
-            if (el.tagName !== "CANVAS") {
-                canvas = document.createElement("canvas");
+            if (el.tagName !== 'CANVAS') {
+                canvas = document.createElement('canvas');
                 el.appendChild(canvas);
             } else canvas = el;
-        } else canvas = document.createElement("canvas");
+        } else canvas = document.createElement('canvas');
         canvas.height = canvas.width = width;
         this._canvas = canvas;
-        this._context = canvas.getContext("2d");
-        this._context.lineJoin = "miter";
-        this._context.strokeStyle = "#000";
+        this._context = canvas.getContext('2d');
+        this._context.lineJoin = 'miter';
+        this._context.strokeStyle = '#000';
         this._context.globalAlpha = 0;
         this._initParams(this._canvas.width);
         if (drawLogo) this.draw();
     }
 
     draw() {
-        var w = this._canvas.width,
-            lw = this._lw;
+        this._initParams();
+        
+        var w = this._canvas.width;
+        var lw = this._lw;
+
         this._context.save();
+        this._updateAllParam();
         this._context.globalAlpha = 1;
 
         this._context.beginPath();
@@ -46,6 +50,14 @@ export class Logo {
         this._hideInnerLineEdges();
     }
 
+    download() {
+        var canvasdata = this._canvas.toDataURL('image/png');
+        var a = document.createElement('a');
+        a.download = 'n-logo.png';
+        a.href = canvasdata;
+        a.click();
+    }
+
     /**
      *- Clears canvas
      *- Updates global alpha for the fade effect
@@ -53,18 +65,21 @@ export class Logo {
      *- Draw updated lines 
      *- Recursively call until both lines are removed  
      */
-    animate() {
+    _animateLogo(callback) {
         this._resetCanvas();
-        if (this._context.globalAlpha < 1) this._context.globalAlpha += 0.01;
-        console.log(this._context.globalAlpha);
+        if (this._context.globalAlpha < 1) this._context.globalAlpha += 0.02;
         this._updateAllParam();
-        if (!this._animationComplete()) requestAnimationFrame(() => this.animate());
-        else this._context.globalAlpha = 0;
+        if (!this._animationComplete()) requestAnimationFrame(() => this._animateLogo(callback));
+        else if (callback) callback();
+    }
+
+    animate(callback) {
+        this._initParams();
+        this._animateLogo(callback);
     }
 
     setWidth(w) {
         this._canvas.height = this._canvas.width = w;
-        this._initParams(this._canvas.width);
     }
 
     _resetCanvas() {
@@ -72,7 +87,7 @@ export class Logo {
         this._context.save();
         this._context.clearRect(0, 0, w, w);
         this._context.globalAlpha = 1;
-        this._context.fillStyle = "#FFF";
+        this._context.fillStyle = '#FFF';
         this._context.fillRect(0, 0, w, w);
         this._context.restore();
     }
@@ -108,7 +123,7 @@ export class Logo {
             this._drawLine(param.line, param.segmentIndex);
             this._hideInnerLineEdges();
 
-            if (f < 1) param.f += 0.05;
+            if (f < 1) param.f += 0.1;
             else {
                 param.f = 0;
                 if (s + 2 <= param.line.segmentCount) param.segmentIndex++;
@@ -140,7 +155,7 @@ export class Logo {
             ih = this._lh;
         this._context.save();
         this._context.globalAlpha = 1;
-        this._context.fillStyle = "#FFF";
+        this._context.fillStyle = '#FFF';
         this._context.fillRect(w - lw - iw, w - lw - ih, iw, ih);
         this._context.fillRect(lw, lw, iw, ih);
         this._context.restore();
@@ -161,7 +176,7 @@ export class Logo {
         this._context.globalAlpha = 1;
         this._context.beginPath();
         this._context.arc(x, y, this._lw / 2, 0, 2 * Math.PI, false);
-        this._context.fillStyle = "#000";
+        this._context.fillStyle = '#000';
         this._context.fill();
         this._context.restore();
     }
@@ -170,11 +185,13 @@ export class Logo {
      * Initializes global parameters
      */
     _initParams() {
-        var w = this._canvas.width,
-            lw = this._lw = Math.round(w * 0.08), //-> Line Width
-            iw = this._iw = Math.round((w - lw * 2) / 2), //-> Inner Rect Width
-            ih = this._lh = Math.round(Logo._3_4ths(iw) + (Logo._3_4ths(iw) * 0.045)); //-> Inner Rect Height
+        var w = this._canvas.width;
+        var lw = Math.round(w * 0.08); //-> Line Width
         
+        this._lw = lw;
+        this._iw = Math.round((w - lw * 2) / 2); //-> Inner Rect Width
+        this._lh = Math.round(Logo._3_4ths(this._iw) + (Logo._3_4ths(this._iw) * 0.045)); //-> Inner Rect Height
+        this._context.globalAlpha = 0;
         this._context.lineWidth = lw;
 
         var l1 = new Line([
@@ -200,13 +217,13 @@ export class Logo {
         this._params.push(new AnimationParam(l2, 0, 0, false));
     }
 
-    static _7_8ths(x) { return Math.round(x * 0.875) }
-    static _3_4ths(x) { return Math.round(x * 0.75) }
+    static _7_8ths(x) { return Math.round(x * 0.875); }
+    static _3_4ths(x) { return Math.round(x * 0.75); }
 }
 
 export class Line {
     constructor(vectors) {
-        this.vectorArray = vectors
+        this.vectorArray = vectors;
         this.segmentCount = vectors.length - 1;
         this.currX = vectors[0].x;
         this.currY = vectors[0].y;
